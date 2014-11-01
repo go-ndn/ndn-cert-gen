@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/taylorchu/ndn"
 	"os"
+	"time"
 )
 
 var (
@@ -21,8 +22,9 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+	name := ndn.NewName(fmt.Sprintf("%s/ksk-%d", *identity, time.Now().UTC().UnixNano()/1000000))
 	ndn.SignKey = ndn.Key{
-		Name:       ndn.NewName(*identity),
+		Name:       name,
 		PrivateKey: rsaKey,
 	}
 	// private key
@@ -49,5 +51,5 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(*identity, "exported")
+	fmt.Println(name.CertificateName(), "exported")
 }
