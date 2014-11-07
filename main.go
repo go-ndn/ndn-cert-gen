@@ -11,9 +11,22 @@ import (
 )
 
 var (
-	identity = flag.String("i", "/testing/key", "identity")
+	identity = flag.String("i", "/ndn/guest/alice", "identity")
 	file     = flag.String("f", "default", "file name for private key and certificate")
 )
+
+func certificateName(name ndn.Name) (certName ndn.Name) {
+	if len(name.Components) < 1 {
+		return
+	}
+	certName.Components = append(name.Components[:len(name.Components)-1],
+		ndn.Component("KEY"),
+		name.Components[len(name.Components)-1],
+		ndn.Component("ID-CERT"),
+		ndn.Component{0x00, 0x00},
+	)
+	return
+}
 
 func main() {
 	flag.Parse()
@@ -23,9 +36,11 @@ func main() {
 		return
 	}
 	name := ndn.NewName(fmt.Sprintf("%s/ksk-%d", *identity, time.Now().UTC().UnixNano()/1000000))
+	certName := certificateName(name)
 	ndn.SignKey = ndn.Key{
-		Name:       name,
-		PrivateKey: rsaKey,
+		Name:            name,
+		CertificateName: certName,
+		PrivateKey:      rsaKey,
 	}
 	// private key
 	f, err := os.Create(*file + ".pri")
@@ -51,5 +66,5 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(name.CertificateName(), "exported")
+	fmt.Println(certName, "exported")
 }
