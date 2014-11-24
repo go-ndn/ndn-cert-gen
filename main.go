@@ -15,19 +15,6 @@ var (
 	file     = flag.String("f", "default", "file name for private key and certificate")
 )
 
-func certificateName(name ndn.Name) (certName ndn.Name) {
-	if len(name.Components) < 1 {
-		return
-	}
-	certName.Components = append(name.Components[:len(name.Components)-1],
-		ndn.Component("KEY"),
-		name.Components[len(name.Components)-1],
-		ndn.Component("ID-CERT"),
-		ndn.Component{0x00, 0x00},
-	)
-	return
-}
-
 func main() {
 	flag.Parse()
 	rsaKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -35,12 +22,10 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	name := ndn.NewName(fmt.Sprintf("%s/ksk-%d", *identity, time.Now().UTC().UnixNano()/1000000))
-	certName := certificateName(name)
+	name := ndn.NewName(fmt.Sprintf("%s/KEY/ksk-%d/ID-CERT/%%00%%00", *identity, time.Now().UTC().UnixNano()/1000000))
 	ndn.SignKey = ndn.Key{
-		Name:            name,
-		CertificateName: certName,
-		PrivateKey:      rsaKey,
+		Name:       name,
+		PrivateKey: rsaKey,
 	}
 	// private key
 	f, err := os.Create(*file + ".pri")
@@ -66,5 +51,5 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(certName, "exported")
+	fmt.Println(name, "exported")
 }
