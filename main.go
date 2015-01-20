@@ -5,9 +5,10 @@ import (
 	"crypto/rsa"
 	"flag"
 	"fmt"
-	"github.com/taylorchu/ndn"
 	"os"
 	"time"
+
+	"github.com/go-ndn/ndn"
 )
 
 var (
