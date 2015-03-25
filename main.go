@@ -24,7 +24,7 @@ func main() {
 		return
 	}
 	name := ndn.NewName(fmt.Sprintf("%s/KEY/ksk-%d/ID-CERT/%%00%%00", *identity, time.Now().UTC().UnixNano()/1000000))
-	ndn.SignKey = ndn.Key{
+	key := ndn.Key{
 		Name:       name,
 		PrivateKey: rsaKey,
 	}
@@ -35,7 +35,7 @@ func main() {
 		return
 	}
 	defer f.Close()
-	err = ndn.SignKey.EncodePrivateKey(f)
+	err = key.EncodePrivateKey(f)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -47,7 +47,7 @@ func main() {
 		return
 	}
 	defer f.Close()
-	err = ndn.SignKey.EncodeCertificate(f)
+	err = key.EncodeCertificate(f)
 	if err != nil {
 		fmt.Println(err)
 		return
