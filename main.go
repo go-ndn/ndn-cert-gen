@@ -1,6 +1,9 @@
 package main
 
 import (
+	"crypto"
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
 	"flag"
@@ -12,13 +15,27 @@ import (
 )
 
 var (
-	identity = flag.String("i", "/ndn/guest/alice", "identity")
-	file     = flag.String("f", "default", "file name for private key and certificate")
+	identity   = flag.String("identity", "/ndn/guest/alice", "identity")
+	encryption = flag.String("encryption", "rsa", "rsa or ecdsa")
+	file       = flag.String("file", "default", "file name for private key and certificate")
 )
 
 func main() {
 	flag.Parse()
-	rsaKey, err := rsa.GenerateKey(rand.Reader, 2048)
+
+	var (
+		pri crypto.PrivateKey
+		err error
+	)
+	switch *encryption {
+	case "rsa":
+		pri, err = rsa.GenerateKey(rand.Reader, 2048)
+	case "ecdsa":
+		pri, err = ecdsa.GenerateKey(elliptic.P224(), rand.Reader)
+	default:
+		flag.PrintDefaults()
+		return
+	}
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -26,7 +43,7 @@ func main() {
 	name := ndn.NewName(fmt.Sprintf("%s/KEY/ksk-%d/ID-CERT/%%00%%00", *identity, time.Now().UTC().UnixNano()/1000000))
 	key := ndn.Key{
 		Name:       name,
-		PrivateKey: rsaKey,
+		PrivateKey: pri,
 	}
 	// private key
 	f, err := os.Create(*file + ".pri")
@@ -40,7 +57,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	// public key
+	// certificate
 	f, err = os.Create(*file + ".ndncert")
 	if err != nil {
 		fmt.Println(err)
