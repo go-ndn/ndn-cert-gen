@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -24,47 +23,54 @@ func main() {
 	flag.Parse()
 
 	var (
-		pri crypto.PrivateKey
-		err error
+		name = ndn.NewName(fmt.Sprintf("%s/KEY/ksk-%d/ID-CERT/%%00%%00", *identity, time.Now().UTC().UnixNano()/1000000))
+		key  ndn.Key
 	)
 	switch *encryption {
 	case "rsa":
-		pri, err = rsa.GenerateKey(rand.Reader, 2048)
+		pri, err := rsa.GenerateKey(rand.Reader, 2048)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		key = &ndn.RSAKey{
+			Name:       name,
+			PrivateKey: pri,
+		}
 	case "ecdsa":
-		pri, err = ecdsa.GenerateKey(elliptic.P224(), rand.Reader)
+		pri, err := ecdsa.GenerateKey(elliptic.P224(), rand.Reader)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		key = &ndn.ECDSAKey{
+			Name:       name,
+			PrivateKey: pri,
+		}
 	default:
 		flag.PrintDefaults()
 		return
 	}
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	name := ndn.NewName(fmt.Sprintf("%s/KEY/ksk-%d/ID-CERT/%%00%%00", *identity, time.Now().UTC().UnixNano()/1000000))
-	key := ndn.Key{
-		Name:       name,
-		PrivateKey: pri,
-	}
 	// private key
-	f, err := os.Create(*file + ".pri")
+	pem, err := os.Create(*file + ".pri")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
-	err = key.EncodePrivateKey(f)
+	defer pem.Close()
+	err = ndn.EncodePrivateKey(key, pem)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	// certificate
-	f, err = os.Create(*file + ".ndncert")
+	cert, err := os.Create(*file + ".ndncert")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer f.Close()
-	err = key.EncodeCertificate(f)
+	defer cert.Close()
+	err = ndn.EncodeCertificate(key, cert)
 	if err != nil {
 		fmt.Println(err)
 		return
