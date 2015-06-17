@@ -23,7 +23,7 @@ func main() {
 	flag.Parse()
 
 	var (
-		name = ndn.NewName(fmt.Sprintf("%s/KEY/ksk-%d/ID-CERT/%%00%%00", *identity, time.Now().UTC().UnixNano()/1000000))
+		name = ndn.NewName(fmt.Sprintf("%s/%d/KEY/%%00%%00", *identity, time.Now().UTC().UnixNano()/1000000))
 		key  ndn.Key
 	)
 	switch *encryption {
