@@ -16,7 +16,7 @@ import (
 
 var (
 	identity   = flag.String("identity", "/ndn/guest/alice", "identity")
-	encryption = flag.String("encryption", "rsa", "rsa or ecdsa")
+	encryption = flag.String("encryption", "rsa", "rsa/ecdsa/hmac")
 	file       = flag.String("file", "default", "file name for private key and certificate")
 )
 
@@ -43,6 +43,14 @@ func main() {
 			log.Fatalln(err)
 		}
 		key = &ndn.ECDSAKey{
+			Name:       name,
+			PrivateKey: pri,
+		}
+	case "hmac":
+		// 256 / 8 = 32
+		pri := make([]byte, 32)
+		rand.Read(pri)
+		key = &ndn.HMACKey{
 			Name:       name,
 			PrivateKey: pri,
 		}
