@@ -16,7 +16,7 @@ import (
 
 var (
 	identity   = flag.String("identity", "/ndn/guest/alice", "identity")
-	encryption = flag.String("encryption", "rsa", "rsa/ecdsa/hmac")
+	encryption = flag.String("encryption", "rsa", "[ rsa | ecdsa | hmac ]")
 	file       = flag.String("file", "default", "file name for private key and certificate")
 )
 
