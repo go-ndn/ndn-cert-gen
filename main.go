@@ -7,6 +7,7 @@ import (
 	"crypto/rsa"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -30,8 +31,7 @@ func main() {
 	case "rsa":
 		pri, err := rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
-			fmt.Println(err)
-			return
+			log.Fatalln(err)
 		}
 		key = &ndn.RSAKey{
 			Name:       name,
@@ -40,8 +40,7 @@ func main() {
 	case "ecdsa":
 		pri, err := ecdsa.GenerateKey(elliptic.P224(), rand.Reader)
 		if err != nil {
-			fmt.Println(err)
-			return
+			log.Fatalln(err)
 		}
 		key = &ndn.ECDSAKey{
 			Name:       name,
@@ -54,26 +53,22 @@ func main() {
 	// private key
 	pem, err := os.Create(*file + ".pri")
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatalln(err)
 	}
 	defer pem.Close()
 	err = ndn.EncodePrivateKey(key, pem)
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatalln(err)
 	}
 	// certificate
 	cert, err := os.Create(*file + ".ndncert")
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatalln(err)
 	}
 	defer cert.Close()
 	err = ndn.EncodeCertificate(key, cert)
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatalln(err)
 	}
-	fmt.Println(name, "exported")
+	log.Println(name, "exported")
 }
