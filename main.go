@@ -7,10 +7,10 @@ import (
 	"crypto/rsa"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
+	"github.com/go-ndn/log"
 	"github.com/go-ndn/ndn"
 )
 
