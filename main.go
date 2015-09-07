@@ -56,7 +56,7 @@ func main() {
 		}
 	default:
 		flag.PrintDefaults()
-		return
+		os.Exit(1)
 	}
 	// private key
 	pem, err := os.Create(*file + ".pri")
