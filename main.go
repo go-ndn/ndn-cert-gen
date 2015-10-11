@@ -15,9 +15,9 @@ import (
 )
 
 var (
-	identity   = flag.String("identity", "/ndn/guest/alice", "identity")
-	encryption = flag.String("encryption", "rsa", "[ rsa | ecdsa | hmac ]")
-	file       = flag.String("file", "default", "file name for private key and certificate")
+	identity = flag.String("identity", "/ndn/guest/alice", "identity")
+	keyType  = flag.String("type", "rsa", "[ rsa | ecdsa | hmac ]")
+	file     = flag.String("file", "default", "file name for private key and certificate")
 )
 
 func main() {
@@ -27,7 +27,7 @@ func main() {
 		name = ndn.NewName(fmt.Sprintf("%s/%d/KEY/%%00%%00", *identity, time.Now().UTC().UnixNano()/1000000))
 		key  ndn.Key
 	)
-	switch *encryption {
+	switch *keyType {
 	case "rsa":
 		pri, err := rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
