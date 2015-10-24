@@ -15,19 +15,19 @@ import (
 )
 
 var (
-	identity = flag.String("identity", "/ndn/guest/alice", "identity")
-	keyType  = flag.String("type", "rsa", "[ rsa | ecdsa | hmac ]")
-	file     = flag.String("file", "default", "file name for private key and certificate")
+	flagIdentity = flag.String("identity", "/ndn/guest/alice", "identity")
+	flagType     = flag.String("type", "rsa", "[ rsa | ecdsa | hmac ]")
+	flagFile     = flag.String("file", "default", "file name for private key and certificate")
 )
 
 func main() {
 	flag.Parse()
 
 	var (
-		name = ndn.NewName(fmt.Sprintf("%s/%d/KEY/%%00%%00", *identity, time.Now().UTC().UnixNano()/1000000))
+		name = ndn.NewName(fmt.Sprintf("%s/%d/KEY/%%00%%00", *flagIdentity, time.Now().UTC().UnixNano()/1000000))
 		key  ndn.Key
 	)
-	switch *keyType {
+	switch *flagType {
 	case "rsa":
 		pri, err := rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
@@ -59,7 +59,7 @@ func main() {
 		os.Exit(1)
 	}
 	// private key
-	pem, err := os.Create(*file + ".pri")
+	pem, err := os.Create(*flagFile + ".pri")
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -69,7 +69,7 @@ func main() {
 		log.Fatalln(err)
 	}
 	// certificate
-	cert, err := os.Create(*file + ".ndncert")
+	cert, err := os.Create(*flagFile + ".ndncert")
 	if err != nil {
 		log.Fatalln(err)
 	}
