@@ -24,7 +24,7 @@ func main() {
 	flag.Parse()
 
 	var (
-		name = ndn.NewName(fmt.Sprintf("%s/%d/KEY/%%00%%00", *flagIdentity, time.Now().UTC().UnixNano()/1000000))
+		name = ndn.NewName(fmt.Sprintf("%s/%d/KEY/%%00%%00", *flagIdentity, time.Now().UnixNano()/1000000))
 		key  ndn.Key
 	)
 	switch *flagType {
