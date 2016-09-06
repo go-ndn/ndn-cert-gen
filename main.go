@@ -14,24 +14,27 @@ import (
 	"github.com/go-ndn/ndn"
 )
 
-var (
-	flagIdentity = flag.String("identity", "/ndn/guest/alice", "identity")
-	flagType     = flag.String("type", "rsa", "[ rsa | ecdsa | hmac ]")
-	flagFile     = flag.String("file", "default", "file name for private key and certificate")
-)
-
 func main() {
+	var (
+		identity string
+		keyType  string
+		file     string
+	)
+	flag.StringVar(&identity, "identity", "/ndn/guest/alice", "identity")
+	flag.StringVar(&keyType, "type", "rsa", "[ rsa | ecdsa | hmac ]")
+	flag.StringVar(&file, "file", "default", "file name for private key and certificate")
 	flag.Parse()
 
 	var (
-		name = ndn.NewName(fmt.Sprintf("%s/%d/KEY/%%00%%00", *flagIdentity, time.Now().UnixNano()/1000000))
+		name = ndn.NewName(fmt.Sprintf("%s/%d/KEY/%%00%%00", identity, time.Now().UnixNano()/1000000))
 		key  ndn.Key
 	)
-	switch *flagType {
+	switch keyType {
 	case "rsa":
 		pri, err := rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
-			log.Fatalln(err)
+			log.Println(err)
+			return
 		}
 		key = &ndn.RSAKey{
 			Name:       name,
@@ -40,7 +43,8 @@ func main() {
 	case "ecdsa":
 		pri, err := ecdsa.GenerateKey(elliptic.P224(), rand.Reader)
 		if err != nil {
-			log.Fatalln(err)
+			log.Println(err)
+			return
 		}
 		key = &ndn.ECDSAKey{
 			Name:       name,
@@ -55,28 +59,32 @@ func main() {
 			PrivateKey: pri,
 		}
 	default:
-		flag.PrintDefaults()
-		os.Exit(1)
+		log.Println("unsupported key type")
+		return
 	}
 	// private key
-	pem, err := os.Create(*flagFile + ".pri")
+	pem, err := os.Create(file + ".pri")
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
+		return
 	}
 	defer pem.Close()
 	err = ndn.EncodePrivateKey(key, pem)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
+		return
 	}
 	// certificate
-	cert, err := os.Create(*flagFile + ".ndncert")
+	cert, err := os.Create(file + ".ndncert")
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
+		return
 	}
 	defer cert.Close()
 	err = ndn.EncodeCertificate(key, cert)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
+		return
 	}
 	log.Println(name, "exported")
 }
