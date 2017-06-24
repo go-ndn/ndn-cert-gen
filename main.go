@@ -53,7 +53,11 @@ func main() {
 	case "hmac":
 		// 256 / 8 = 32
 		pri := make([]byte, 32)
-		rand.Read(pri)
+		_, err := rand.Read(pri)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 		key = &ndn.HMACKey{
 			Name:       name,
 			PrivateKey: pri,
