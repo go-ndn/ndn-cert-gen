@@ -10,8 +10,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/go-ndn/log"
 	"github.com/go-ndn/ndn"
+	"github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -29,11 +29,17 @@ func main() {
 		name = ndn.NewName(fmt.Sprintf("%s/%d/KEY/%%00%%00", identity, time.Now().UnixNano()/1000000))
 		key  ndn.Key
 	)
+	log := logrus.WithFields(logrus.Fields{
+		"name":     name,
+		"identity": identity,
+		"type":     keyType,
+		"file":     file,
+	})
 	switch keyType {
 	case "rsa":
 		pri, err := rsa.GenerateKey(rand.Reader, 2048)
 		if err != nil {
-			log.Println(err)
+			log.Error(err)
 			return
 		}
 		key = &ndn.RSAKey{
@@ -43,7 +49,7 @@ func main() {
 	case "ecdsa":
 		pri, err := ecdsa.GenerateKey(elliptic.P224(), rand.Reader)
 		if err != nil {
-			log.Println(err)
+			log.Error(err)
 			return
 		}
 		key = &ndn.ECDSAKey{
@@ -55,7 +61,7 @@ func main() {
 		pri := make([]byte, 32)
 		_, err := rand.Read(pri)
 		if err != nil {
-			log.Println(err)
+			log.Error(err)
 			return
 		}
 		key = &ndn.HMACKey{
@@ -63,32 +69,32 @@ func main() {
 			PrivateKey: pri,
 		}
 	default:
-		log.Println("unsupported key type")
+		log.Error("unsupported key type")
 		return
 	}
 	// private key
 	pem, err := os.Create(file + ".pri")
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 	defer pem.Close()
 	err = ndn.EncodePrivateKey(key, pem)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 	// certificate
 	cert, err := os.Create(file + ".ndncert")
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
 	defer cert.Close()
 	err = ndn.EncodeCertificate(key, cert)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		return
 	}
-	log.Println(name, "exported")
+	log.Info("key exported")
 }
